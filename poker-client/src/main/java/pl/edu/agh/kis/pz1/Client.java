@@ -18,16 +18,16 @@ public class Client {
 
 
         while(true) {
-            getTextFromServer();
-            getTextFromServer();
-            getTextFromServer();
-            getTextFromServer();
-            getTextFromServer(); // co chcesz zrobic
-            sendDecision();
-            getTextFromServer(); // Najlepszy układ twoich kart
-            getTextFromServer(); // show ranking
-            getTextFromServer(); // wygrywa gracz x
-            getTextFromServer(); // kolejna tura
+            ByteBuffer buffer_response = ByteBuffer.allocate(256);
+            thisClient.read(buffer_response);
+            String result = new String(buffer_response.array()).trim();
+
+            if (result.contains("Wybierz, co chcesz zrobic")) {
+                System.out.println("Wybierz, co chcesz zrobic: 1. Wymienic karty, 2. Spasowac");
+                if (sendDecision() == 0) continue;
+            }
+
+            System.out.println(result);
         }
     }
 
@@ -64,7 +64,7 @@ public class Client {
         System.out.println(result);
     }
 
-    public static void sendDecision() throws IOException {
+    public static int sendDecision() throws IOException {
         int response = scanner.nextInt();
         String responseToServer;
         if (response == 1){
@@ -84,6 +84,6 @@ public class Client {
         if (response == 1){
             getTextFromServer();
         }
-
+        return 0;
     }
 }
