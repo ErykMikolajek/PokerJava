@@ -17,7 +17,7 @@ public class Client {
         getId();
 
 
-        while(true) {
+        while(thisClient.isConnected()) {
             ByteBuffer buffer_response = ByteBuffer.allocate(256);
             thisClient.read(buffer_response);
             String result = new String(buffer_response.array()).trim();
