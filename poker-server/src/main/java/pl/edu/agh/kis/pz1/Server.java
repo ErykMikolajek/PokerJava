@@ -30,13 +30,13 @@ public class Server {
 
         selector = Selector.open();
         serverSocket = ServerSocketChannel.open();
-        serverAddr = new InetSocketAddress("localhost", 1234);
+        serverAddr = new InetSocketAddress("localhost", 1235);
 
         serverSocket.bind(serverAddr);
         serverSocket.configureBlocking(false);
 
         int ops = serverSocket.validOps();
-        SelectionKey selectKey = serverSocket.register(selector, ops, null);
+        serverSocket.register(selector, ops, null);
 
         // gra
         SelectionKey[] temp = selector.keys().toArray(new SelectionKey[0]);
@@ -57,14 +57,11 @@ public class Server {
         }
         sendToAll("Gra rozpoczęta z " + numOfPlayers + " graczami.");
         identifyPlayers();
-        while(true) {
+        while(selector.keys().size() > 0) {
             sendToAll("\nTwoje karty:\n");
             showCards();
             sendToAll("\nNajlepszy układ twoich kart:\n ");
             showRanking();
-            //sendToAll("Pierwsza tura licytacji");
-            //bettingInfo();
-            //bettingResponse();
             sendToAll("\nWybierz, co chcesz zrobic: 1. Wymienic karty, 2. Spasowac\n");
             if (getDecision() == 0) {
                 for (Player p : players) {
@@ -105,6 +102,7 @@ public class Server {
             mainDeck = new Deck();
             for (Player p : players){
                 p.cards_ = mainDeck.dealCards(5);
+                p.lastDecision = "";
             }
         }
 
@@ -189,49 +187,6 @@ public class Server {
                 byte[] messageInBytes = cards.getBytes();
                 ByteBuffer bufferToSend = ByteBuffer.wrap(messageInBytes);
                 client.write(bufferToSend);
-                client.register(selector, SelectionKey.OP_READ);
-            }
-        }
-    }
-
-    public static void bettingResponse() throws IOException {
-        serverKeys = selector.keys();
-        for (SelectionKey key : serverKeys) {
-            if (key.isReadable()) {
-                SocketChannel client = (SocketChannel) key.channel();
-                client.register(selector, SelectionKey.OP_WRITE);
-                int currentPlayerIndex = -1;
-                for (int i = 0; i < players.length; i++)
-                    if (players[i].playerKey.equals(key)){
-                        currentPlayerIndex = i;
-                    }
-
-                ByteBuffer buffer_response = ByteBuffer.allocate(Integer.BYTES);
-                client.read(buffer_response);
-                int playerBet = ByteBuffer.wrap(buffer_response.array()).getInt();
-                players[currentPlayerIndex].balance -= playerBet;
-                //sendToAll("Gracz " + (currentPlayerIndex + 1) + " postawił " + playerBet);
-            }
-        }
-    }
-
-    public static void bettingInfo() throws IOException {
-        serverKeys = selector.keys();
-        for (SelectionKey key : serverKeys) {
-            if (key.isReadable()) {
-                SocketChannel client = (SocketChannel) key.channel();
-                client.register(selector, SelectionKey.OP_WRITE);
-                int money = 0, currentPlayerIndex = -1;
-                for (int i = 0; i < players.length; i++)
-                    if (players[i].playerKey.equals(key)){
-                        money = players[i].balance;
-                        currentPlayerIndex = i;
-                    }
-
-                byte[] bytes = ByteBuffer.allocate(Integer.BYTES).putInt(money).array();
-                ByteBuffer bufferToSend = ByteBuffer.wrap(bytes);
-                client.write(bufferToSend);
-                bufferToSend.clear();
                 client.register(selector, SelectionKey.OP_READ);
             }
         }

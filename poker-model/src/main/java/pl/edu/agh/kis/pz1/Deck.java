@@ -58,14 +58,6 @@ public class Deck {
         return returnCards;
     }
 
-    private void deleteCard(Card card){
-        for (int i = 0; i < this.deck_.length; i++){
-            if (this.deck_[i].equals(card)) {
-                this.deck_[i] = null;
-                break;
-            }
-        }
-    }
     private void deleteCard(int indexOfCard){
         this.deck_[indexOfCard] = null;
     }
