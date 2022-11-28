@@ -21,6 +21,7 @@ public class Server {
     static ServerSocketChannel serverSocket;
     static InetSocketAddress serverAddr;
     static Set<SelectionKey> serverKeys;
+    static SelectionKey[] keysArray;
 
     public static void main(String[] args) throws IOException {
         System.out.println("Ile graczy będzie grało: ");
@@ -44,7 +45,7 @@ public class Server {
         connectPlayers();
         players = new Player[numOfPlayers];
         temp = selector.keys().toArray(new SelectionKey[0]);
-        SelectionKey[] keysArray = new SelectionKey[temp.length - 1];
+        keysArray = new SelectionKey[temp.length - 1];
         int j = 0;
         for (SelectionKey selectionKey : temp) {
             if (!selectionKey.equals(server_key))
@@ -56,34 +57,37 @@ public class Server {
         }
         sendToAll("Gra rozpoczęta z " + numOfPlayers + " graczami.");
         identifyPlayers();
-        //while(true) {
-            sendToAll("Twoje karty:");
+        while(true) {
+            sendToAll("\nTwoje karty:\n");
             showCards();
-            sendToAll("Najlepszy układ twoich kart: ");
+            sendToAll("\nNajlepszy układ twoich kart:\n ");
             showRanking();
             //sendToAll("Pierwsza tura licytacji");
             //bettingInfo();
             //bettingResponse();
-            sendToAll("Wybierz, co chcesz zrobic: 1. Wymienic karty, 2. Spasowac");
-            getDecision();
-            for (Player p : players) {
-                if (p.lastDecision != null || p.lastDecision.charAt(0) == '1'){
-                    for (int i = 1; i < p.lastDecision.length(); i++){
-                        int index = p.lastDecision.charAt(i);
-                        p.cards_[index] = mainDeck.dealCards(1)[0];
-                    }
-                    for (SelectionKey key : serverKeys) {
-                        if (key.isReadable() && key.equals(p.playerKey)) {
-                            SocketChannel client = (SocketChannel) key.channel();
-                            String cardsToSend = p.show_cards();
-                            byte[] messageInBytes = cardsToSend.getBytes();
-                            ByteBuffer bufferToSend = ByteBuffer.wrap(messageInBytes);
-                            client.write(bufferToSend);
-                            client.register(selector, SelectionKey.OP_READ);
+            sendToAll("\nWybierz, co chcesz zrobic: 1. Wymienic karty, 2. Spasowac\n");
+            if (getDecision() == 0) {
+                for (Player p : players) {
+                    if (p.lastDecision != null || p.lastDecision.charAt(0) == '1') {
+                        for (int i = 1; i < p.lastDecision.length(); i++) {
+                            int index = p.lastDecision.charAt(i) - 48;
+                            p.cards_[index - 1] = mainDeck.dealCards(1)[0];
+                        }
+                        for (SelectionKey key : serverKeys) {
+                            if (key.isReadable() && key.equals(p.playerKey)) {
+                                SocketChannel client = (SocketChannel) key.channel();
+                                String cardsToSend = p.show_cards();
+                                byte[] messageInBytes = cardsToSend.getBytes();
+                                ByteBuffer bufferToSend = ByteBuffer.wrap(messageInBytes);
+                                client.write(bufferToSend);
+                                client.register(selector, SelectionKey.OP_READ);
+                            }
                         }
                     }
                 }
             }
+            sendToAll("\nNajlepszy układ twoich kart:\n ");
+            showRanking();
 
             Player winningPlayer = players[0];
             for (Player p : players) {
@@ -93,30 +97,62 @@ public class Server {
             }
             for (int i = 0; i < players.length; i++) {
                 if (players[i] == winningPlayer) {
-                    sendToAll("Wygrywa gracz " + (i + 1));
+                    sendToAll("\nWygrywa gracz " + (i + 1));
                 }
             }
-        //}
+            sendToAll("\n\n===== Kolejna tura =====\n");
+
+            mainDeck = new Deck();
+            for (Player p : players){
+                p.cards_ = mainDeck.dealCards(5);
+            }
+        }
 
     }
 
-    public static void getDecision() throws IOException {
-        serverKeys = selector.keys();
-        for (SelectionKey key : serverKeys) {
-            if (key.isReadable()) {
-                SocketChannel client = (SocketChannel) key.channel();
-                int playerNum = -1;
-                for (int i = 0; i < players.length; i++)
-                    if (players[i].playerKey.equals(key)){
-                        playerNum = i + 1;
+    public static int getDecision() throws IOException {
+        Set<SelectionKey> playersAnswered = new HashSet<>();
+        boolean areAllPlayersReady = false;
+        while (!areAllPlayersReady) {
+            boolean isPlayerReady = false;
+            serverKeys = selector.keys();
+            for (SelectionKey key : keysArray) {
+                while (!isPlayerReady && !playersAnswered.contains(key)) {
+                    if (key.isReadable()) {
+                        SocketChannel client = (SocketChannel) key.channel();
+                        int playerNum = -1;
+                        for (int i = 0; i < players.length; i++)
+                            if (players[i].playerKey.equals(key)) {
+                                playerNum = i + 1;
+                            }
+
+                            String res = null;
+                            ByteBuffer buffer = null;
+                            while (res == null || res.equals("")) {
+                                buffer = ByteBuffer.allocate(256);
+                                client.read(buffer);
+                                res = new String(buffer.array()).trim();
+                            }
+
+                            players[playerNum - 1].lastDecision = new String(buffer.array()).trim();
+                            if (players[playerNum - 1].lastDecision != null && !players[playerNum - 1].lastDecision.equals("")) {
+                                isPlayerReady = true;
+                                playersAnswered.add(players[playerNum - 1].playerKey);
+                            }
+
+
                     }
-
-                ByteBuffer buffer = ByteBuffer.allocate(256);
-                client.read(buffer);
-
-                players[playerNum-1].lastDecision = new String(buffer.array()).trim();
+                }
+            }
+            areAllPlayersReady = true;
+            for (Player p : players){
+                if (p.lastDecision == null || p.lastDecision.equals("")) {
+                    areAllPlayersReady = false;
+                    break;
+                }
             }
         }
+        return 0;
     }
 
     public static void identifyPlayers() throws IOException {

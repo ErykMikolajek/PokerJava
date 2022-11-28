@@ -17,7 +17,7 @@ public class Client {
     public static void main(String[] args) throws IOException, InterruptedException {
         connectToServer();
         getId();
-        //while(true) {
+        while(true) {
             getTextFromServer();
             getTextFromServer();
             getTextFromServer();
@@ -27,10 +27,12 @@ public class Client {
             //bet();
             getTextFromServer(); // co chcesz zrobic
             sendDecision();
+            getTextFromServer(); // Najlepszy układ twoich kart
+            getTextFromServer(); // show ranking
             getTextFromServer(); // wygrywa gracz x
-
-        //}
-        client.close();
+            getTextFromServer(); // kolejna tura
+        }
+        //client.close();
     }
 
     public static void getId() throws IOException {
@@ -95,8 +97,8 @@ public class Client {
         String responseToServer = null;
         if (response == 1){
             System.out.println("Podaj bez separatorow numery kart które chcesz wymienić: ");
-            String cardsNum = scanner.nextLine();
-            responseToServer = 1 + cardsNum;
+            int cardsNum = scanner.nextInt();
+            responseToServer = "1" + cardsNum;
         }
         else if (response == 2)
             responseToServer = "2";
