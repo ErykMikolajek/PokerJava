@@ -16,7 +16,6 @@ public class Client {
         connectToServer();
         getId();
 
-
         while(thisClient.isConnected()) {
             ByteBuffer buffer_response = ByteBuffer.allocate(256);
             thisClient.read(buffer_response);

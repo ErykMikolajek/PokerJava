@@ -3,11 +3,24 @@ package pl.edu.agh.kis.pz1;
 import java.nio.channels.SelectionKey;
 import java.util.*;
 
+/**
+ * Klasa reprezentująca pojedynczego gracza
+ * Gracz posiada atrybuty:
+ *  num_of_cards ilośc kart
+ *  cards_ tablica obiektów Card
+ *  balance ilość środków które może przeznaczyć na obstawianie
+ *  playerKey identyfikuje gracza podczas połączenia z serwerem
+ *  lastDecision ostatnia podjęta decyzja gracza
+ */
 public class Player {
-    //zmienna przechowująca liczbę kart jaką ma gracz
+    /**
+     * zmienna przechowująca liczbę kart jaką ma gracz
+     */
     int num_of_cards = 5;
 
-    //tablica przechowująca karty które gracz posiada
+    /**
+     * tablica przechowująca karty które gracz posiada
+     */
     Card[] cards_;
 
     int balance;
@@ -32,7 +45,9 @@ public class Player {
         balance = 100;
     }
 
-    //funkcja wypisująca karty gracza
+    /**
+     * funkcja wypisująca karty gracza
+     */
     public String show_cards(){
         String returnString = "";
         for (int i = 0; i < cards_.length; i++)

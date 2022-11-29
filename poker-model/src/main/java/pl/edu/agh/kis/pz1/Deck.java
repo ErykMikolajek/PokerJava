@@ -2,11 +2,21 @@ package pl.edu.agh.kis.pz1;
 
 import java.util.Arrays;
 
+
+/**
+*   Klasa przechowująca talie kart, zbiór obiektów Card.
+*   Domyślnie tworzona jest z 52 posortowanymi kartami
+*
+ */
 public class Deck {
-    //tablica przechowująca talię kart
+    /**
+     * tablica przechowująca talię kart
+     */
     Card[] deck_;
 
-    //kostruktor tworzący talię kart z 52 kartami
+    /**
+     * kostruktor tworzący talię kart z 52 kartami
+     */
     public Deck(){
         deck_ = new Card[52];
         int index = 0;
@@ -17,13 +27,17 @@ public class Deck {
         }
     }
 
-    //funkcja wypisująca karty w talii na ekran
+    /**
+     * funkcja wypisująca karty w talii na ekran
+     */
     public void print(){
         for (Card card : deck_)
             System.out.print(card.rank_ + " of " + card.suit_ + ",\n");
     }
 
-    //funkcja porządkująca talie
+    /**
+     * funkcja porządkująca talie
+     */
     public void sort(){
         for (int j = 1; j < 52; j++) {
             Card key = this.deck_[j];
@@ -36,7 +50,9 @@ public class Deck {
         }
     }
 
-    //funkcja mieszająca talie obiekt
+    /**
+     * funkcja mieszająca talie obiekt
+     */
     public void shuffle(){
         for (int i = 0; i < 52; i++){
             int swap_pos = (int)(Math.random() * 51);
@@ -46,6 +62,9 @@ public class Deck {
         }
     }
 
+    /**
+     * funkcja wydająca podaną liczbę kart dla gracza
+     */
     public Card[] dealCards(int numOfCards){
         Card[] returnCards = new Card[numOfCards];
         for (int i = 0; i < numOfCards; i++){

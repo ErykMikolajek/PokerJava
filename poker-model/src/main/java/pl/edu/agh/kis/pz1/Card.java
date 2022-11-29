@@ -2,26 +2,36 @@ package pl.edu.agh.kis.pz1;
 
 import java.util.Objects;
 
+/**
+ *   Klasa reprezentująca pojedynczą kartę
+ *   Jej atrybutami są rank_ i suit_ zawierające
+ *   odpowiednie wartości typów wyliczeniowych Rank i Suit.
+ *
+ */
 public class Card {
-    //zmienna przechowująca wartość karty
+    /**
+     * zmienna przechowująca wartość karty
+     */
     Rank rank_;
 
-    //zmienna przechowująca symbol karty
+    /**
+     * zmienna przechowująca symbol karty
+     */
     Suit suit_;
 
-    /*
-    * konstruktor tworzący kartę na podstawie podanych pól enum
-    *
-    * @param  rank odpowiednia nazwa pola typu wyliczeniowego Rank
-    * @param  suit odpowiednia nazwa pola typu wyliczeniowego Suit
-    * @return      obiekt typu Card
-    * */
+    /**
+     * konstruktor tworzący kartę na podstawie podanych pól enum
+     * @param  rank odpowiednia nazwa pola typu wyliczeniowego Rank
+     * @param  suit odpowiednia nazwa pola typu wyliczeniowego Suit
+     */
     public Card(Rank rank, Suit suit){
         rank_ = rank;
         suit_ = suit;
     }
 
-    //konstruktor tworzący kartę na podstawie podanych liczb
+    /**
+     * konstruktor tworzący kartę na podstawie podanych liczb
+     */
     public Card(int rank, int suit){
         switch (rank) {
             case 0 -> rank_ = Rank.TWO;
@@ -48,7 +58,9 @@ public class Card {
         }
     }
 
-    //funkcja porównująca dwie karty
+    /**
+     * funkcja porównująca dwie karty
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -62,7 +74,9 @@ public class Card {
         return Objects.hash(rank_, suit_);
     }
 
-    //funkcja pomocnicza sprawdzająca czy dana karta jest większa od podanej
+    /**
+     * funkcja pomocnicza sprawdzająca czy dana karta jest większa od podanej
+     */
     public boolean is_greater_than(Card other){
         if (this.rank_.num_val > other.rank_.num_val) return true;
         else if (this.rank_.num_val == other.rank_.num_val){
